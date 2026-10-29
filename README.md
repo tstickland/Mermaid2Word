@@ -33,7 +33,7 @@ npm start        # trusts a localhost dev certificate (first run asks for confir
 npm stop         # when finished
 ```
 
-In Word: **Insert → Mermaid Diagram** opens the task pane.
+In Word: **Home → Add-ins → Mermaid Diagrams (Dev)** (under Developer Add-ins) opens the task pane the first time; after that the **Insert → Mermaid Diagram** button appears.
 
 To sideload by hand instead: run `npm run dev-server`, then in Word use
 **Insert → Add-ins → My Add-ins → Upload My Add-in** (Word on the web) or a

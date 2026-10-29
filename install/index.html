@@ -24,15 +24,16 @@
   <h2>Word on Windows</h2>
   <p>Open <b>PowerShell</b> (Start menu &rarr; type "PowerShell") and paste:</p>
   <pre><code>irm __ADDIN_BASE_URL__install/install-windows.ps1 | iex</code><button class="copy" type="button">Copy</button></pre>
-  <p>Restart Word, then go to <b>Insert &rarr; Mermaid Diagram</b>.</p>
+  <p>Close <b>all</b> Word windows and reopen Word. Then go to <b>Home &rarr; Add-ins</b> and choose <b>Mermaid Diagrams</b> (under <b>Developer Add-ins</b>). After that first time, it also has its own button at <b>Insert &rarr; Mermaid Diagram</b>.</p>
   <p class="note">This installs for your Windows account only and doesn't need admin rights. You can
      <a href="install/install-windows.ps1">read the script</a> first.</p>
 
   <h2>Word on Mac</h2>
   <p>Open <b>Terminal</b> and paste:</p>
   <pre><code>curl -fsSL __ADDIN_BASE_URL__install/install-mac.sh | bash</code><button class="copy" type="button">Copy</button></pre>
-  <p>Quit and reopen Word, then go to <b>Insert &rarr; Mermaid Diagram</b>. If you don't see it, look under
-     <b>Insert &rarr; Add-ins &rarr; My Add-ins</b>.</p>
+  <p>Quit Word completely (Word &rarr; Quit Word) and reopen it. Then open the add-in from the <b>Add-ins</b> button
+     (on the <b>Home</b> or <b>Insert</b> tab, depending on your Word version) and choose <b>Mermaid Diagrams</b>.
+     After that first time, look for <b>Insert &rarr; Mermaid Diagram</b>.</p>
   <p class="note"><a href="install/install-mac.sh">Read the script</a>.</p>
 
   <h2>Word on the web</h2>

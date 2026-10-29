@@ -17,7 +17,7 @@ New-ItemProperty -Path $registryKey -Name $addinId -Value $manifestPath -Propert
 
 Write-Host "Mermaid Diagrams add-in installed."
 if (Get-Process WINWORD -ErrorAction SilentlyContinue) {
-  Write-Host "Close and reopen Word, then look for Insert > Mermaid Diagram."
-} else {
-  Write-Host "Open Word and look for Insert > Mermaid Diagram."
+  Write-Host "Close ALL Word windows and reopen Word."
 }
+Write-Host "In Word, go to Home > Add-ins and choose 'Mermaid Diagrams' (under Developer Add-ins)."
+Write-Host "After the first time, it also appears at Insert > Mermaid Diagram."
