@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mermaid Diagrams for Word: install</title>
+  <link rel="icon" href="assets/icon-32.png" />
+  <style>
+    body { font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif; color: #323130; max-width: 760px; margin: 40px auto; padding: 0 20px; line-height: 1.5; }
+    h1 { display: flex; align-items: center; gap: 12px; font-size: 26px; }
+    h2 { margin-top: 32px; font-size: 19px; border-bottom: 1px solid #e1dfdd; padding-bottom: 4px; }
+    pre { position: relative; background: #f3f2f1; border-radius: 4px; padding: 12px 70px 12px 12px; overflow-x: auto; font-size: 13px; }
+    code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; }
+    button.copy { position: absolute; top: 8px; right: 8px; font: inherit; font-size: 12px; padding: 2px 10px; border: 1px solid #8a8886; border-radius: 2px; background: #fff; cursor: pointer; }
+    .note { color: #605e5c; font-size: 14px; }
+    a.button { display: inline-block; background: #2b579a; color: #fff; padding: 6px 14px; border-radius: 2px; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1><img src="assets/icon-64.png" width="40" height="40" alt="" /> Mermaid Diagrams for Word</h1>
+  <p>Write <a href="https://mermaid.js.org/">Mermaid</a> code in Word and insert crisp, editable diagrams.
+     Install it once using the steps for your version of Word. After that, updates arrive automatically.</p>
+
+  <h2>Word on Windows</h2>
+  <p>Open <b>PowerShell</b> (Start menu &rarr; type "PowerShell") and paste:</p>
+  <pre><code>irm __ADDIN_BASE_URL__install/install-windows.ps1 | iex</code><button class="copy" type="button">Copy</button></pre>
+  <p>Restart Word, then go to <b>Insert &rarr; Mermaid Diagram</b>.</p>
+  <p class="note">This installs for your Windows account only and doesn't need admin rights. You can
+     <a href="install/install-windows.ps1">read the script</a> first.</p>
+
+  <h2>Word on Mac</h2>
+  <p>Open <b>Terminal</b> and paste:</p>
+  <pre><code>curl -fsSL __ADDIN_BASE_URL__install/install-mac.sh | bash</code><button class="copy" type="button">Copy</button></pre>
+  <p>Quit and reopen Word, then go to <b>Insert &rarr; Mermaid Diagram</b>. If you don't see it, look under
+     <b>Insert &rarr; Add-ins &rarr; My Add-ins</b>.</p>
+  <p class="note"><a href="install/install-mac.sh">Read the script</a>.</p>
+
+  <h2>Word on the web</h2>
+  <ol>
+    <li><a class="button" href="manifest.xml" download="mermaid-diagrams-manifest.xml">Download the manifest</a></li>
+    <li>In Word on the web, open a document and go to <b>Home &rarr; Add-ins &rarr; More Add-ins</b>.</li>
+    <li>Choose <b>Upload My Add-in</b> (under <b>My Add-ins</b>) and select the downloaded file.</li>
+  </ol>
+
+  <h2>Using it</h2>
+  <ul>
+    <li>Pick a <b>Template</b> or write Mermaid code, check the preview, then click <b>Insert</b>.</li>
+    <li>To edit a diagram, click it in the document, click <b>Load selected</b>, change the code, then click <b>Update selected</b>.</li>
+    <li>Type a code block in your document (<code>```mermaid</code>, the code, then <code>```</code>, each on its own line)
+        and click <b>Convert code blocks</b> to turn it into a diagram.</li>
+  </ul>
+
+  <h2>Uninstall</h2>
+  <p>Windows (PowerShell):</p>
+  <pre><code>irm __ADDIN_BASE_URL__install/uninstall-windows.ps1 | iex</code><button class="copy" type="button">Copy</button></pre>
+  <p>Mac (Terminal):</p>
+  <pre><code>curl -fsSL __ADDIN_BASE_URL__install/uninstall-mac.sh | bash</code><button class="copy" type="button">Copy</button></pre>
+  <p>Word on the web: <b>Add-ins &rarr; My Add-ins</b>, open the add-in's <b>&hellip;</b> menu and choose <b>Remove</b>.</p>
+
+  <script>
+    for (const button of document.querySelectorAll("button.copy")) {
+      button.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(button.previousElementSibling.textContent);
+        button.textContent = "Copied";
+        setTimeout(() => (button.textContent = "Copy"), 1500);
+      });
+    }
+  </script>
+</body>
+</html>

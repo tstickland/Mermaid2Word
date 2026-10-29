@@ -5,12 +5,29 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 const DEV_URL = "https://localhost:3000/";
+const DEV_ID = "421e73bd-ba8c-4b41-afdd-7ebce3be7f67";
+// The shared build gets its own add-in ID so it can be installed next to a dev copy.
+const PROD_ID = "7c1a0671-5dcf-49fe-8ee5-83cc5c2644a7";
 
 module.exports = async (env, argv) => {
   const dev = argv.mode !== "production";
   // Production builds point the manifest at wherever dist/ will be hosted.
   let prodUrl = process.env.ADDIN_BASE_URL || "https://localhost:3000/";
   if (!prodUrl.endsWith("/")) prodUrl += "/";
+
+  const toProdManifest = (content) =>
+    content
+      .toString()
+      .split(DEV_URL)
+      .join(prodUrl)
+      .split(new URL(DEV_URL).origin)
+      .join(new URL(prodUrl).origin)
+      .split(DEV_ID)
+      .join(PROD_ID)
+      .split(" (Dev)")
+      .join("");
+  const fillInstallPlaceholders = (content) =>
+    content.toString().split("__ADDIN_BASE_URL__").join(prodUrl).split("__ADDIN_ID__").join(PROD_ID);
   const harness = !!(env && env.harness);
   const serving = !!(env && env.WEBPACK_SERVE);
 
@@ -60,19 +77,14 @@ module.exports = async (env, argv) => {
         patterns: [
           { from: "assets/*.png", to: "assets/[name][ext]" },
           { from: "src/taskpane/taskpane.css", to: "taskpane.css" },
-          {
-            from: "manifest.xml",
-            to: "manifest.xml",
-            transform: (content) =>
-              dev
-                ? content
-                : content
-                    .toString()
-                    .split(DEV_URL)
-                    .join(prodUrl)
-                    .split(new URL(DEV_URL).origin)
-                    .join(new URL(prodUrl).origin),
-          },
+          { from: "manifest.xml", to: "manifest.xml", transform: (c) => (dev ? c : toProdManifest(c)) },
+          // Teammate install page and scripts, published next to the manifest.
+          ...(dev
+            ? []
+            : [
+                { from: "install/index.html", to: "index.html", transform: fillInstallPlaceholders },
+                { from: "install/*.{ps1,sh}", to: "install/[name][ext]", transform: fillInstallPlaceholders },
+              ]),
         ],
       }),
     ],

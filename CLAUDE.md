@@ -7,7 +7,7 @@ Office.js task-pane add-in for Word that renders Mermaid (pinned `mermaid@12.2.0
 ## Commands
 
 - `npm start` / `npm stop`: dev server on https://localhost:3000 plus sideload into Word desktop. The first run installs a localhost dev certificate, which prompts the user.
-- `ADDIN_BASE_URL=https://host/path/ npm run build`: production `dist/`. Webpack rewrites every `https://localhost:3000/` URL and the `AppDomain` origin in `manifest.xml`. Validate the result with `npx office-addin-manifest validate dist/manifest.xml`.
+- `ADDIN_BASE_URL=https://host/path/ npm run build`: production `dist/`. Webpack rewrites `manifest.xml` for production: localhost URLs and the `AppDomain` origin become the hosted URL, the add-in `<Id>` becomes `PROD_ID`, and " (Dev)" is dropped from labels. It also fills the `__ADDIN_BASE_URL__`/`__ADDIN_ID__` placeholders in `install/` (the teammate install page and scripts). Validate with `npx office-addin-manifest validate dist/manifest.xml`. Pushing to `main` does this automatically and publishes to https://tstickland.github.io/Mermaid2Word/ (`.github/workflows/deploy-pages.yml`).
 - `npm run validate`: validates the dev manifest.
 - `npx tsc --noEmit -p .`: type-check.
 - `npm run test:render`: builds the `--env harness` bundle into `test-build/`. It then renders every entry in `src/templates.ts` in headless **Edge** (Playwright `channel: "msedge"`, overridable with `PLAYWRIGHT_CHANNEL`) and writes SVG/PNG/OOXML/alt text to `test-output/`. It also runs `__selfTest()` (alt-text round trip, code-block detection). `RAW=id1,id2` also saves Mermaid's unsanitized output as `raw-<id>.svg` for comparison. No single-test runner exists; to test one diagram, temporarily trim `TEMPLATES` or add a template.
@@ -32,6 +32,8 @@ Render pipeline: `mermaidRenderer.ts` → `svgSanitize.ts` → `rasterize.ts` �
 - ZenUML is registered via `registerExternalDiagrams`. The `logos` icon pack (large JSON) is lazy-loaded for Architecture diagrams.
 
 ## Gotchas
+
+- Team distribution is by per-user sideload, because there is no M365 admin access. The Windows installer writes `HKCUSoftwareMicrosoftOffice.0WefDeveloper<PROD_ID>` = manifest path, the same mechanism `npm start` uses. The Mac installer copies the manifest into Word's `wef` folder. Changing `PROD_ID` would orphan existing installs.
 
 - `typescript` is pinned to 5.x: ts-loader cannot use TypeScript 7 (it has no JS compiler API).
 - The task pane stylesheet is copied as a static file (`taskpane.css`) and linked from `taskpane.html`, not imported.

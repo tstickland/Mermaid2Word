@@ -40,16 +40,23 @@ To sideload by hand instead: run `npm run dev-server`, then in Word use
 [shared-folder catalog](https://learn.microsoft.com/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins)
 (Word on Windows) with `manifest.xml`.
 
-## Host it (GitHub Pages or any HTTPS static host)
+## Share it with your team
 
-```sh
-ADDIN_BASE_URL=https://<user>.github.io/<repo>/ npm run build
-```
+Every push to `main` builds the add-in and publishes it to GitHub Pages
+(`.github/workflows/deploy-pages.yml`). This needs **Settings → Pages → Source: GitHub Actions**
+on the repository. Teammates install from the published page:
 
-`dist/` is a static site. Publish its contents at that URL (for GitHub Pages: push `dist/` to a
-`gh-pages` branch, or use a Pages workflow that uploads `dist/`). `dist/manifest.xml` points at the
-hosted URL. Give that manifest to users, who install it as above. Bump `<Version>` in `manifest.xml`
-when you publish changes to the manifest itself.
+**https://tstickland.github.io/Mermaid2Word/**
+
+It has a one-line installer for Word on Windows (PowerShell) and Mac (Terminal), plus a manifest
+download for Word on the web. No Microsoft 365 admin access is needed: the installers sideload the
+add-in for the current user. Code changes reach everyone automatically on their next Word restart.
+Only changes to `manifest.xml` (ribbon, name, permissions) require teammates to re-run the installer;
+bump `<Version>` when you make one.
+
+The shared build has a different add-in ID from the dev manifest (`webpack.config.js` swaps it), and
+the dev copy is labelled "(Dev)", so both can be installed side by side. To host somewhere else, build
+with `ADDIN_BASE_URL=https://your.host/path/ npm run build` and publish `dist/`.
 
 ## Tests
 
