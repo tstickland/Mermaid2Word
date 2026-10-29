@@ -1,0 +1,40 @@
+{
+  "name": "word-mermaid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Render Mermaid diagrams inside Microsoft Word",
+  "config": {
+    "app_to_debug": "word",
+    "app_type_to_debug": "desktop",
+    "dev_server_port": 3000
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "dev-server": "webpack serve --mode development",
+    "start": "office-addin-debugging start manifest.xml",
+    "stop": "office-addin-debugging stop manifest.xml",
+    "validate": "office-addin-manifest validate manifest.xml",
+    "test:render": "webpack --mode development --env harness && node scripts/render-all.mjs",
+    "test:word": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/word-com-test.ps1 && node scripts/check-alt-text.mjs"
+  },
+  "dependencies": {
+    "@iconify-json/logos": "^1.2.18",
+    "@mermaid-js/mermaid-zenuml": "^1.0.1",
+    "mermaid": "^12.2.0"
+  },
+  "devDependencies": {
+    "@types/office-js": "^1.0.614",
+    "copy-webpack-plugin": "^14.0.0",
+    "html-webpack-plugin": "^5.6.8",
+    "office-addin-debugging": "^7.0.1",
+    "office-addin-dev-certs": "^3.0.1",
+    "office-addin-manifest": "^3.0.1",
+    "playwright": "^1.64.1",
+    "ts-loader": "^9.6.2",
+    "typescript": "^5.9.3",
+    "webpack": "^5.112.2",
+    "webpack-cli": "^7.2.3",
+    "webpack-dev-server": "^6.1.0"
+  }
+}

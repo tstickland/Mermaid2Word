@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mermaid Diagrams</title>
+  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <link rel="stylesheet" href="taskpane.css" />
+</head>
+<body>
+  <main>
+    <label class="field">
+      <span>Template</span>
+      <select id="template">
+        <option value="">Start from a template…</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Mermaid source</span>
+      <textarea id="source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="12"></textarea>
+    </label>
+
+    <div id="error" class="error" role="alert" hidden></div>
+    <div id="preview" class="preview" aria-label="Preview"></div>
+
+    <details id="options">
+      <summary>Options</summary>
+      <div class="grid">
+        <label class="field">
+          <span>Theme</span>
+          <select id="theme">
+            <option value="default">Default</option>
+            <option value="neutral">Neutral</option>
+            <option value="dark">Dark</option>
+            <option value="forest">Forest</option>
+            <option value="base">Base</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Background</span>
+          <select id="background">
+            <option value="white">White</option>
+            <option value="transparent">Transparent</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Max width (in)</span>
+          <input id="maxWidth" type="number" min="0.5" max="40" step="0.25" />
+        </label>
+        <label class="field">
+          <span>PNG resolution</span>
+          <select id="scale">
+            <option value="1">1×</option>
+            <option value="2">2×</option>
+            <option value="3">3×</option>
+            <option value="4">4×</option>
+          </select>
+        </label>
+      </div>
+      <label class="check">
+        <input id="pngOnly" type="checkbox" />
+        <span>Insert PNG only (no SVG)</span>
+      </label>
+    </details>
+
+    <div class="buttons">
+      <button id="insert" class="primary" type="button">Insert</button>
+      <button id="update" type="button" disabled>Update selected</button>
+      <button id="load" type="button">Load selected</button>
+    </div>
+    <div class="buttons">
+      <button id="convert" type="button" title="Replace each ```mermaid fenced block in the document with its diagram">Convert code blocks</button>
+      <button id="refresh" type="button">Re-render all</button>
+    </div>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+  </main>
+</body>
+</html>

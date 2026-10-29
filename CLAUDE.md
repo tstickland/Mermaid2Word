@@ -1,0 +1,38 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+Office.js task-pane add-in for Word that renders Mermaid (pinned `mermaid@12.2.0`) and inserts diagrams as SVG pictures with a PNG fallback. See README.md for user-facing setup and hosting.
+
+## Commands
+
+- `npm start` / `npm stop`: dev server on https://localhost:3000 plus sideload into Word desktop. The first run installs a localhost dev certificate, which prompts the user.
+- `ADDIN_BASE_URL=https://host/path/ npm run build`: production `dist/`. Webpack rewrites every `https://localhost:3000/` URL and the `AppDomain` origin in `manifest.xml`. Validate the result with `npx office-addin-manifest validate dist/manifest.xml`.
+- `npm run validate`: validates the dev manifest.
+- `npx tsc --noEmit -p .`: type-check.
+- `npm run test:render`: builds the `--env harness` bundle into `test-build/`. It then renders every entry in `src/templates.ts` in headless **Edge** (Playwright `channel: "msedge"`, overridable with `PLAYWRIGHT_CHANNEL`) and writes SVG/PNG/OOXML/alt text to `test-output/`. It also runs `__selfTest()` (alt-text round trip, code-block detection). `RAW=id1,id2` also saves Mermaid's unsanitized output as `raw-<id>.svg` for comparison. No single-test runner exists; to test one diagram, temporarily trim `TEMPLATES` or add a template.
+- `npm run test:word` (Windows + Word installed): `scripts/word-com-test.ps1` inserts each `test-output/*.ooxml.xml` into a hidden Word instance via COM `Range.InsertXML`, the same import path as Office.js `insertOoxml`. It saves `all-diagrams.docx`/`.pdf` and tests in-place replace; then `check-alt-text.mjs` verifies alt text survived. Run `test:render` first.
+
+## Architecture
+
+Render pipeline: `mermaidRenderer.ts` → `svgSanitize.ts` → `rasterize.ts` → `word/ooxml.ts` → `word/diagrams.ts`. The task pane (`taskpane.ts`) only wires UI to `word/diagrams.ts`.
+
+- **Rendering happens in an off-screen stage div**, `#mermaid-stage`. It must stay laid out: do **not** use `visibility:hidden` or `display:none`, because the sanitizer measures text with `getBoundingClientRect` and skips hidden text. Mermaid calls are serialized through a promise queue because Mermaid holds global config.
+- **`svgSanitize.ts` exists because Office's SVG renderer is limited.** Each step works around something Word does:
+  - CSS is only partly supported, so each element's computed style is written as presentation attributes (only where it differs from the parent) and `<style>` is removed.
+  - `<foreignObject>` is not rendered, so HTML labels are converted to `<text>` per laid-out line. Swimlanes, Journey and Event Modeling ignore `htmlLabels: false`.
+  - `dominant-baseline` is ignored, so it is emulated with a `translate`.
+  - Any element with a `filter` attribute is **dropped entirely**, so filters are removed. Mermaid's "neo" drop shadows made sequence actor boxes vanish.
+  - Newlines inside `<text>` are deleted rather than collapsed to spaces, so they are normalized.
+
+  When a diagram looks wrong in Word but right in a browser, the cause is usually here. Check Word's actual rendering via `test:word`'s PDF.
+- **Source of truth for editing is the picture's alt text** (`word/sourceMeta.ts`). The first line is `%% mermaid-word {json options + base64 "src"}`, followed by the raw source. The base64 copy guards against hosts mangling line breaks. Decoding works on any picture, wrapped or not, so diagrams pasted between documents remain editable.
+- **OOXML shape** (`word/ooxml.ts`): a flat-OPC package with a PNG `a:blip` plus the `asvg:svgBlip` extension. New inserts are wrapped in a content control tagged `mermaid-diagram`. Updates replace only the picture's range with an **unwrapped** package, so the existing control is reused rather than nested. insertOoxml merges a single-paragraph package into the target paragraph, which is why `insertDiagram` first creates an empty paragraph when the cursor is inside text.
+- `convertCodeBlocks` normalizes Word AutoFormat characters (smart quotes, en/em dashes, ellipsis, NBSP) before rendering. Fences must open at the start of a paragraph and close at the end of one; lines may be separate paragraphs or soft breaks.
+- ZenUML is registered via `registerExternalDiagrams`. The `logos` icon pack (large JSON) is lazy-loaded for Architecture diagrams.
+
+## Gotchas
+
+- `typescript` is pinned to 5.x: ts-loader cannot use TypeScript 7 (it has no JS compiler API).
+- The task pane stylesheet is copied as a static file (`taskpane.css`) and linked from `taskpane.html`, not imported.
+- Word automation on this machine: exported PDFs are encrypted, so render them with pdf.js rather than reading them directly. `SaveAs2` has hung intermittently on a hidden prompt, so `word-com-test.ps1` runs Word in a job with a timeout. On timeout it stops only the WINWORD process it started. Never kill all WINWORD processes, because the user may have documents open.
