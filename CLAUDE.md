@@ -33,8 +33,7 @@ Render pipeline: `mermaidRenderer.ts` → `svgSanitize.ts` → `rasterize.ts` �
 
 ## Gotchas
 
-- Team distribution is by per-user sideload, because there is no M365 admin access. The Windows installer writes `HKCUSoftwareMicrosoftOffice.0WefDeveloper<PROD_ID>` = manifest path, the same mechanism `npm start` uses. The Mac installer copies the manifest into Word's `wef` folder. Changing `PROD_ID` would orphan existing installs.
-
+- Team distribution is by per-user sideload, because there is no M365 admin access. The Windows installer writes `HKCU\Software\Microsoft\Office\16.0\Wef\Developer\<PROD_ID>` = manifest path, the same mechanism `npm start` uses. The Mac installer copies the manifest into Word's `wef` folder. Changing `PROD_ID` would orphan existing installs.
 - `typescript` is pinned to 5.x: ts-loader cannot use TypeScript 7 (it has no JS compiler API).
 - The task pane stylesheet is copied as a static file (`taskpane.css`) and linked from `taskpane.html`, not imported.
 - Word automation on this machine: exported PDFs are encrypted, so render them with pdf.js rather than reading them directly. `SaveAs2` has hung intermittently on a hidden prompt, so `word-com-test.ps1` runs Word in a job with a timeout. On timeout it stops only the WINWORD process it started. Never kill all WINWORD processes, because the user may have documents open.
