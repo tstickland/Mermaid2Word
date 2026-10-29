@@ -1,17 +1,23 @@
-// Renders every template through the add-in's pipeline in headless Edge (same engine as
-// Word's WebView2) and writes SVG, PNG and OOXML files to test-output/.
-import { chromium } from "playwright";
+// Renders every template through the add-in's pipeline in a headless browser and writes SVG,
+// PNG and OOXML files to test-output/ (test-output/<browser>/ for non-default browsers).
+// BROWSER=msedge (default; same engine as Word's WebView2 on Windows), chrome, or firefox
+// (the engines behind Word on the web in those browsers).
+import { chromium, firefox } from "playwright";
 import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = resolve(import.meta.dirname, "..");
-const outDir = resolve(root, "test-output");
+const browserName = process.env.BROWSER ?? "msedge";
+const outDir = resolve(root, "test-output", browserName === "msedge" ? "" : browserName);
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 
-const channel = process.env.PLAYWRIGHT_CHANNEL ?? "msedge";
-const browser = await chromium.launch({ channel });
+const browser =
+  browserName === "firefox"
+    ? await firefox.launch()
+    : await chromium.launch(browserName === "chrome" ? {} : { channel: browserName });
+console.log(`browser: ${browserName} ${browser.version()}`);
 const page = await browser.newPage();
 const consoleErrors = [];
 page.on("pageerror", (e) => consoleErrors.push(e.message));

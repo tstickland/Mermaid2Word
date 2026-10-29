@@ -61,7 +61,8 @@ with `ADDIN_BASE_URL=https://your.host/path/ npm run build` and publish `dist/`.
 ## Tests
 
 ```sh
-npm run test:render   # renders all 31 templates in headless Edge through the real pipeline;
+npm run test:render   # renders all 31 templates in headless Edge through the real pipeline
+                      # (BROWSER=chrome or BROWSER=firefox for the Word-on-the-web engines);
                       # writes SVG/PNG/OOXML to test-output/
 npm run test:word     # (Windows + Word) inserts every diagram into a real Word document via COM,
                       # saves test-output/all-diagrams.docx/.pdf, checks alt text and in-place update
