@@ -13,12 +13,12 @@ const srcOf = (alt) => {
 };
 
 let failed = 0;
-originals.forEach((file, i) => {
+originals.forEach((file) => {
   const original = readFileSync(resolve(dir, file), "utf8");
-  const word = fromWord[i] ?? "";
+  const word = fromWord[file.replace(/\.alt\.txt$/, "")] ?? "";
   const exact = word === original;
   const sameLines = word.replace(/\r\n?/g, "\n") === original;
-  const srcOk = srcOf(word) === srcOf(original);
+  const srcOk = !!word && srcOf(word) === srcOf(original);
   if (!srcOk) failed++;
   console.log(`${srcOk ? "ok  " : "FAIL"}  ${file.padEnd(22)} exact=${exact} sameAfterNewlineNormalize=${sameLines}`);
 });

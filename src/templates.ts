@@ -313,6 +313,22 @@ title UDP Packet
     disk2:T -- B:db`,
   },
   {
+    id: "architecture-icons",
+    name: "Architecture (icon libraries)",
+    // Any Iconify set works as prefix:name; browse them at https://icon-sets.iconify.design/
+    source: `architecture-beta
+    group cloud(logos:aws)[AWS]
+
+    service users(fa6-solid:users)[Users]
+    service gateway(logos:aws-api-gateway)[API Gateway] in cloud
+    service fn(logos:aws-lambda)[Lambda] in cloud
+    service db(mdi:database)[Database] in cloud
+
+    users:R --> L:gateway
+    gateway:R --> L:fn
+    fn:R --> L:db`,
+  },
+  {
     id: "radar",
     name: "Radar",
     source: `radar-beta

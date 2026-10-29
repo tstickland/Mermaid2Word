@@ -20,6 +20,24 @@ and inserts them into your document as crisp, editable pictures.
   ```
   ````
 
+- **Icon libraries**: Architecture diagrams and flowchart icon shapes can use any of the
+  200,000+ icons on [Iconify](https://icon-sets.iconify.design/), written as `prefix:name`:
+
+  ```
+  architecture-beta
+    service db(mdi:database)[Database]
+    service users(fa6-solid:users)[Users]
+  ```
+  ```
+  flowchart LR
+    A@{ icon: "logos:github-icon", label: "Repo" }
+  ```
+
+  The `logos` set is built in and works offline. Icons from any other set are downloaded from
+  the Iconify API (`api.iconify.design`) when the diagram renders. They are then stored in the
+  picture, so nobody needs a connection to view the document. Offline, or if a network blocks
+  that site, Mermaid draws a "?" in place of the icon. The **Architecture (icon libraries)**
+  template has an example.
 - **Options**: theme (default, neutral, dark, forest, base), background, maximum width,
   PNG resolution, and a PNG-only mode. **Re-render all** applies the current options to every
   diagram in the document.
@@ -73,6 +91,7 @@ npm run test:word     # (Windows + Word) inserts every diagram into a real Word 
 | File | Purpose |
 | --- | --- |
 | `src/render/mermaidRenderer.ts` | Configures Mermaid (plain-SVG labels, ZenUML, icon packs) and renders. |
+| `src/render/iconPacks.ts` | Finds `prefix:name` icon references and fetches just those icons from the Iconify API. |
 | `src/render/svgSanitize.ts` | Makes the SVG Word-safe: resolves CSS into attributes, converts HTML labels to `<text>`, emulates `dominant-baseline`, removes filters. |
 | `src/render/rasterize.ts` | Builds the PNG fallback. |
 | `src/word/ooxml.ts` | Builds the OOXML package (PNG blip and `asvg:svgBlip` extension, tagged content control). |

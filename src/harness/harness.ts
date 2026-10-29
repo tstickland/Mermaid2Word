@@ -6,6 +6,7 @@ import { TEMPLATES } from "../templates";
 import { buildDiagramOoxml } from "../word/ooxml";
 import { decodeAltText, encodeAltText } from "../word/sourceMeta";
 import { findCodeBlocks } from "../word/diagrams";
+import { findIconRefs } from "../render/iconPacks";
 
 interface HarnessResult {
   id: string;
@@ -90,6 +91,14 @@ function selfTest(): string[] {
   check(blocks[0]?.source === 'flowchart LR\n  A ----> B["Hi"]', `code block 1 source: ${JSON.stringify(blocks[0]?.source)}`);
   check(blocks[1]?.startPara === 6 && blocks[1]?.endPara === 6, "code block 2 (soft breaks) range");
   check(blocks[1]?.source === 'pie\n  "A": 1', "code block 2 source");
+
+  // Iconify icon references (bundled "logos" and built-in names are skipped).
+  const refs = findIconRefs(
+    'architecture-beta\n  service a(mdi:database)[A]\n  service b(logos:aws)[B]\n  service c(cloud)[C]\n' +
+      '  X@{ icon: "fa6-solid:user" }\n  style X stroke-width:4px'
+  );
+  const refList = JSON.stringify([...refs].map(([prefix, names]) => [prefix, [...names]]));
+  check(refList === '[["mdi",["database"]],["fa6-solid",["user"]]]', `icon refs: ${refList}`);
   return failures;
 }
 

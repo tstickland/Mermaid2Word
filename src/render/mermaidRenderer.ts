@@ -3,6 +3,7 @@ import zenuml from "@mermaid-js/mermaid-zenuml";
 import { DiagramOptions } from "../options";
 import { sanitizeSvg } from "./svgSanitize";
 import { rasterize } from "./rasterize";
+import { loadIconsFor } from "./iconPacks";
 
 export interface RenderResult {
   /** Word-safe SVG markup, or null when the diagram can only be inserted as PNG. */
@@ -64,6 +65,7 @@ async function renderNow(source: string, options: DiagramOptions): Promise<Rende
   await setup();
   configure(options);
   await mermaid.parse(source);
+  await loadIconsFor(source);
 
   const stage = getStage();
   const id = `mermaid-word-${++renderCount}`;
@@ -102,6 +104,7 @@ export function renderPreview(source: string, options: DiagramOptions): Promise<
     await setup();
     configure(options);
     await mermaid.parse(source);
+    await loadIconsFor(source);
     const { svg } = await mermaid.render(`mermaid-preview-${++renderCount}`, source, getStage());
     return svg;
   });

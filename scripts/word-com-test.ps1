@@ -38,8 +38,9 @@ $job = Start-Job -ArgumentList $OutDir -ScriptBlock {
     "Tagged content controls: $tagged"
     if ($tagged -ne $files.Count) { $failures++ }
 
-    # Alt text exactly as Word stores it, for comparison with the *.alt.txt originals.
-    $alt = @(); foreach ($s in $doc.InlineShapes) { $alt += $s.AlternativeText }
+    # Alt text exactly as Word stores it, keyed by test name, for comparison with the *.alt.txt originals.
+    $alt = [ordered]@{}; $i = 1
+    foreach ($f in $files) { $alt[$f.Name -replace "\.ooxml\.xml$", ""] = $doc.InlineShapes.Item($i).AlternativeText; $i++ }
     [IO.File]::WriteAllText("$OutDir\word-alt-texts.json", (ConvertTo-Json $alt))
 
     # Replace the first diagram's picture in place (the "Update selected" path).
