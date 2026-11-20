@@ -1,7 +1,9 @@
 import { SanitizedSvg } from "./svgSanitize";
 
-// Keep PNG fallbacks a reasonable size for very large diagrams.
+// Keep PNGs a reasonable size for very large diagrams. Browsers also refuse canvases with a
+// side much over 16384 px (Chromium's hard limit is 32767), so cap each side too.
 const MAX_PIXELS = 40_000_000;
+const MAX_SIDE = 16384;
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -19,7 +21,7 @@ export async function rasterize(
   background: "white" | "transparent"
 ): Promise<string> {
   const area = svg.width * svg.height;
-  const s = area * scale * scale > MAX_PIXELS ? Math.sqrt(MAX_PIXELS / area) : scale;
+  const s = Math.min(scale, Math.sqrt(MAX_PIXELS / area), MAX_SIDE / svg.width, MAX_SIDE / svg.height);
 
   const url = URL.createObjectURL(new Blob([svg.markup], { type: "image/svg+xml;charset=utf-8" }));
   try {
@@ -34,7 +36,10 @@ export async function rasterize(
     }
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL("image/png");
-    return dataUrl.slice(dataUrl.indexOf(",") + 1);
+    const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+    // An oversized or failed canvas gives "data:," rather than an error.
+    if (!base64) throw new Error(`Could not create a ${canvas.width}×${canvas.height} PNG of the diagram.`);
+    return base64;
   } finally {
     URL.revokeObjectURL(url);
   }

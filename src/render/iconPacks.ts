@@ -20,11 +20,15 @@ const BUNDLED_PREFIXES = new Set(["logos"]);
 // Iconify's public API and its official mirrors, tried in order.
 const API_HOSTS = ["https://api.iconify.design", "https://api.simplesvg.com", "https://api.unisvg.com"];
 const FETCH_TIMEOUT_MS = 8000;
+// After the API is found unreachable, wait this long before trying again, so a blocked
+// network doesn't add the fetch timeouts to every render.
+const RETRY_AFTER_MS = 60_000;
 
 const NAME = "[a-z0-9]+(?:-[a-z0-9]+)*";
 const ICON_REFS = [
-  // Architecture: service id(prefix:name)[Label], group id(prefix:name)[Label]
-  new RegExp(`\\(\\s*(${NAME}):(${NAME})\\s*\\)`, "g"),
+  // Architecture: service id(prefix:name)[Label], group id(prefix:name)[Label]. Anchored on the
+  // keyword so text such as a flowchart node A(team:payments) isn't sent to the Iconify API.
+  new RegExp(`\\b(?:service|group)\\s+[\\w-]+\\s*\\(\\s*(${NAME}):(${NAME})\\s*\\)`, "g"),
   // Flowchart icon shape: id@{ icon: "prefix:name" }
   new RegExp(`\\bicon\\s*:\\s*["'](${NAME}):(${NAME})["']`, "g"),
 ];
@@ -33,6 +37,8 @@ const ICON_REFS = [
 const loaded = new Map<string, IconifyJSON>();
 /** "prefix:name" pairs the API reported as missing, so they aren't requested again. */
 const missing = new Set<string>();
+/** When the API was last found unreachable. */
+let unreachableAt = -Infinity;
 
 /** Returns the Iconify icons the source refers to, grouped by prefix. */
 export function findIconRefs(source: string): Map<string, Set<string>> {
@@ -64,7 +70,7 @@ async function fetchIcons(prefix: string, names: string[]): Promise<IconifyJSON 
 
 /**
  * Fetches and registers the Iconify icons used by the source. Network problems are ignored:
- * Mermaid then draws its "?" placeholder, and the icons are retried on the next render.
+ * Mermaid then draws its "?" placeholder, and the icons are retried a minute later.
  */
 export async function loadIconsFor(source: string): Promise<void> {
   const refs = findIconRefs(source);
@@ -74,12 +80,13 @@ export async function loadIconsFor(source: string): Promise<void> {
       const wanted = [...names].filter(
         (n) => !missing.has(`${prefix}:${n}`) && !have?.icons[n] && !have?.aliases?.[n]
       );
-      if (!wanted.length) return;
+      if (!wanted.length || Date.now() - unreachableAt < RETRY_AFTER_MS) return;
 
       let data: IconifyJSON | null;
       try {
         data = await fetchIcons(prefix, wanted);
       } catch {
+        unreachableAt = Date.now();
         return;
       }
       if (!data) {

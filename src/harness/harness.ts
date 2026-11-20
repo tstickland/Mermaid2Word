@@ -7,6 +7,7 @@ import { buildDiagramOoxml } from "../word/ooxml";
 import { decodeAltText, encodeAltText } from "../word/sourceMeta";
 import { findCodeBlocks } from "../word/diagrams";
 import { findIconRefs } from "../render/iconPacks";
+import { rasterize } from "../render/rasterize";
 
 interface HarnessResult {
   id: string;
@@ -59,7 +60,7 @@ async function renderAll(overrides: Partial<DiagramOptions> = {}): Promise<Harne
   return results;
 }
 
-function selfTest(): string[] {
+async function selfTest(): Promise<string[]> {
   const failures: string[] = [];
   const check = (cond: boolean, msg: string) => cond || failures.push(msg);
 
@@ -99,6 +100,20 @@ function selfTest(): string[] {
   );
   const refList = JSON.stringify([...refs].map(([prefix, names]) => [prefix, [...names]]));
   check(refList === '[["mdi",["database"]],["fa6-solid",["user"]]]', `icon refs: ${refList}`);
+  // Parenthesized label text isn't an icon reference.
+  const labels = findIconRefs("flowchart LR\n  A(phase:design) --> B(team:payments)");
+  check(labels.size === 0, `label text sent as icons: ${JSON.stringify([...labels.keys()])}`);
+
+  // A very wide diagram at 2x would need a 140000 px canvas, past browser limits even though its
+  // area is under MAX_PIXELS; the side cap keeps the PNG valid.
+  try {
+    const wide = { width: 70000, height: 100 };
+    const markup = `<svg xmlns="http://www.w3.org/2000/svg" width="${wide.width}" height="${wide.height}"><rect width="100%" height="100%" fill="#2b579a"/></svg>`;
+    const png = await rasterize({ markup, ...wide }, 2, "white");
+    check(png.length > 100, `wide PNG is empty (${png.length} chars)`);
+  } catch (err) {
+    failures.push(`wide PNG: ${err}`);
+  }
   return failures;
 }
 

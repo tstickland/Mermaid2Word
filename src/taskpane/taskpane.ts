@@ -1,6 +1,6 @@
 /* global Office */
 import { DEFAULT_OPTIONS, DiagramOptions, MermaidTheme } from "../options";
-import { renderPreview } from "../render/mermaidRenderer";
+import { renderPreview, SupersededError } from "../render/mermaidRenderer";
 import { TEMPLATES } from "../templates";
 import {
   BatchResult,
@@ -117,7 +117,7 @@ async function updatePreview() {
     ui.preview.classList.toggle("dark-theme", options.theme === "dark" && options.background === "transparent");
     ui.error.hidden = true;
   } catch (err) {
-    if (token !== previewToken) return;
+    if (token !== previewToken || err instanceof SupersededError) return;
     ui.error.textContent = errorMessage(err);
     ui.error.hidden = false;
   }

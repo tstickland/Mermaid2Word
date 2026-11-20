@@ -98,9 +98,25 @@ export function renderDiagram(source: string, options: DiagramOptions): Promise<
   return job;
 }
 
-/** Renders for on-screen preview only (no sanitizing or rasterizing). */
+/** Thrown for a preview that a newer preview made obsolete before it started. */
+export class SupersededError extends Error {
+  constructor() {
+    super("Superseded by a newer preview.");
+    this.name = "SupersededError";
+  }
+}
+
+let previewGeneration = 0;
+
+/**
+ * Renders for on-screen preview only (no sanitizing or rasterizing). A preview still waiting in
+ * the queue when a newer one is requested is skipped (rejects with SupersededError), so typing
+ * can't pile up renders in front of Insert.
+ */
 export function renderPreview(source: string, options: DiagramOptions): Promise<string> {
+  const generation = ++previewGeneration;
   const job = queue.then(async () => {
+    if (generation !== previewGeneration) throw new SupersededError();
     await setup();
     configure(options);
     await mermaid.parse(source);

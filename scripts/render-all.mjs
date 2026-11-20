@@ -3,15 +3,18 @@
 // BROWSER=msedge (default; same engine as Word's WebView2 on Windows), chrome, or firefox
 // (the engines behind Word on the web in those browsers).
 import { chromium, firefox } from "playwright";
-import { mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdirSync, readdirSync, writeFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = resolve(import.meta.dirname, "..");
 const browserName = process.env.BROWSER ?? "msedge";
 const outDir = resolve(root, "test-output", browserName === "msedge" ? "" : browserName);
-rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
+// Clear only this run's own files: test-output/ also holds other browsers' subfolders.
+for (const entry of readdirSync(outDir, { withFileTypes: true })) {
+  if (entry.isFile()) rmSync(resolve(outDir, entry.name));
+}
 
 const browser =
   browserName === "firefox"
